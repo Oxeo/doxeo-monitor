@@ -4,6 +4,7 @@
 MessageLogger::MessageLogger()
 {
     idCpt = 1;
+    fcm = NULL;
 }
 
 MessageLogger::~MessageLogger()
@@ -37,12 +38,25 @@ void MessageLogger::messageHandler(QtMsgType type, const QMessageLogContext &con
         abort();
     }
     
-    MessageLogger::Log log = {logger().idCpt, QDateTime::currentDateTime(), localMsg, typeString};
-    logger().messages.append(log);
-    logger().idCpt++;
+    MessageLogger::logger().addMessage(typeString, localMsg);
+
+    FirebaseCloudMessaging *fcm = MessageLogger::logger().getFCM();
+    if (fcm != NULL) {
+        if (typeString == "warning" || typeString == "critical") {
+            FirebaseCloudMessaging::Message msg = {"WARNING", "Doxeo", localMsg};
+            fcm->send(msg);
+        }
+    }
+}
+
+void MessageLogger::addMessage(QString type, QString msg)
+{
+    MessageLogger::Log log = {idCpt, QDateTime::currentDateTime(), msg, type};
+    messages.append(log);
+    idCpt++;
     
-    if (logger().messages.size() > 100000) {
-        logger().messages.removeFirst();
+    if (messages.size() > 100000) {
+        messages.removeFirst();
     }
 }
 

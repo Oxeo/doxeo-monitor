@@ -12,6 +12,14 @@ $(document).ready(function () {
             type: 'GET',
             dataType: 'json'
         },
+        toolbar: {
+             items: [{                          
+                text: 'Export',
+                click: function () {
+                    window.location.href = 'export';
+                }
+            }]
+        },
         actions: {
             listAction: 'script_list.js',
             createAction: 'edit_script.js',
@@ -33,12 +41,19 @@ $(document).ready(function () {
             },
 			content: {
                 title: 'Content',
-				type: 'textarea',
+				type: 'hidden',
 				list: false,
             },
             status: {
                 title: 'Status',
                 options: { 'on': 'On', 'off': 'Off'}
+            },
+            editorButton: {
+                title: 'Content',
+                display: function(data) {
+                     return '<a href="editor?id=' + data.record.id + '"><button type="button" onclick="">Edit</button></a>';
+                },
+                edit: false
             }
         }
     });

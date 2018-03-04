@@ -10,25 +10,26 @@ class FirebaseCloudMessaging : public QObject
     Q_OBJECT
 
 public:
+    struct Message {
+      QString type;
+      QString title;
+      QString body;
+    };
+
     explicit FirebaseCloudMessaging(QString projectName, QObject *parent = 0);
     void setServerKey(QString serverKey);
-    void setTopic(QString topic);
-    void setTitle(QString title);
-    void setMessage(QString message);
-    void send(QString targetToken);
+    void send(Message message);
 
 public slots:
     void networkReply(QNetworkReply*);
 
 protected:
-    QJsonObject buildJsonMessage(QString targetToken);
+    QJsonObject buildJsonMessage(Message message);
 
     QNetworkAccessManager *manager;
     QString projectName;
     QString serverKey;
-    QString topic;
-    QString title;
-    QString message;
+    Message message;
 };
 
 #endif // FIREBASECLOUDMESSAGING_H

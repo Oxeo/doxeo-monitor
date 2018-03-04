@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Script editor</title>
+  <style type="text/css" media="screen">
+    body {
+      background-color: #2f3129;
+      color: #FFFFFF;
+    }
+    #editor { 
+        position: absolute;
+        top: 40px;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+    #topMenu {
+        margin-left: 40px;
+    }
+    #scriptTitle {
+        color: #FFFFFF;
+    }
+    #spinner {
+        color: #FFFFCC;
+    }
+  </style>
+</head>
+<body>
+   <div id="topMenu">
+    <button type="button" id="saveButton">Save</button> <button type="button" id="reloadButton">Reload</button>
+    <span id="status"></span><span id="scriptTitle"></span>
+    <span id="spinner"></span>
+  </div>
+  <div id="editor"></div>
+
+<script src="../assets/jquery/jquery-2.1.4.min.js"></script>
+<script src="../assets/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor = ace.edit("editor");
+    
+    jQuery(document).ready(function() {
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/javascript");
+        
+        load(location.search.split('id=')[1]);
+    });
+    
+    $("#saveButton").click( function() {
+        $("#spinner").text("Saving...");
+        param = {
+            id: location.search.split('id=')[1],
+            content: editor.getValue()
+        };
+        
+        $.getJSON('set_body', param)
+            .done(function(result) {
+                if (result.success) {
+                    $("#status").text("");
+                    $("#spinner").text("");
+                } else {
+                    $("#spinner").text(result.msg);
+                }
+            }).fail(function(jqxhr, textStatus, error) {
+                $("#spinner").text("Request Failed: " + error);
+        });
+    });
+    
+    editor.session.on('change', function(delta) {
+        $("#spinner").text("");
+        $("#status").text("*");
+    });
+    
+    $("#reloadButton").click( function() {
+        editor.setValue("");
+        load(location.search.split('id=')[1]);
+    });
+    
+    function load(scriptId) {
+        $("#spinner").text("Loading...");
+        param = {
+            id: scriptId
+        };
+        
+        $.getJSON('get_script.js', param).done(function(result) {
+            if (result.success) {
+                $("#scriptTitle").text(result.script.name);
+                $("#spinner").text("");
+                editor.setValue(result.script.content);
+                editor.gotoLine(1);
+                $("#status").text("");
+            } else {
+                $("#spinner").text(result.msg);
+            }
+        }).fail(function(jqxhr, textStatus, error) {
+            $("#spinner").text("Request Failed: " + error);
+        });
+    }
+    
+</script>
+</body>
+</html>

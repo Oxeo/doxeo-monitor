@@ -28,7 +28,7 @@ public slots:
     void setLog(QString log);
     void setWarning(QString warning);
     void setAlert(QString alert);
-    void sendFCM(QString message);
+    void sendFCM(QString type, QString name, QString body);
 
     static QString getData(QString key);
     static void setData(QString key, QString value);

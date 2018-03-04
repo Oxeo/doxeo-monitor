@@ -18,6 +18,7 @@ public:
     };
 
     QList<Log>& getMessages();
+    void addMessage(QString type, QString msg);
     void removeBeforeId(int id, QString type);
     void setFirebaseCloudMessaging(FirebaseCloudMessaging *fcm);
     FirebaseCloudMessaging* getFCM();

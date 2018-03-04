@@ -28,8 +28,19 @@
 
  1. Download the driver [here](https://dev.mysql.com/downloads/connector/c/).
  2. Copy libmysql.dll into C:\Program Files\Qt\5.5\mingw492_32\bin
+ 
+ ### Install SSL driver on windows
 
-### Install Qt 5.5 (not tested)
+ 1. Download Win32 OpenSSL v1.0.2n [here](http://slproweb.com/products/Win32OpenSSL.html).
+ 2. Install openSLL
+ 2. Copy libeay32.dll and ssleay32.dll into your executable folder
+ 
+ ### Install SSL driver on raspbian
+```
+ sudo apt-get install openssl
+ ```
+
+### Install Qt 5.5
 
  1. Download Qt [here](http://download.qt.io/archive/qt/5.5/5.5.1/single/qt-everywhere-opensource-src-5.5.1.tar.xz).
  2. Copy the folder qtbase into your raspberry pi
@@ -44,10 +55,15 @@
  -opensource -confirm-license \
  -optimized-qmake -reduce-exports -force-pkg-config \
  -nomake examples -no-compile-examples \
- -release -qt-pcre -prefix /opt/Qt5.5.1
+ -release -qt-pcre -openssl -prefix /opt/Qt5.5
 ```
  5. do: make
  6. do: sudo make install
+
+You now have Qt installed in /opt/Qt5.5 ready to be used. To configure your Qt project(s) to build with this version run qmake from the installation directory:
+```
+/opt/Qt5.5/bin/qmake
+```
  
 ### Install QtSerialPort (5.5)
 
@@ -86,4 +102,18 @@
 ### Send mail with raspberry
 
 http://www.pihomeserver.fr/2015/08/13/envoyer-un-email-depuis-votre-raspberry-pi/
+
+### Install ddclient for DynHost OVH
+
+1. sudo apt-get install ddclient
+2. sudo vim /etc/ddclient.conf
+```
+protocol=dyndns2
+use=web, web=checkip.dyndns.com
+server=www.ovh.com
+login=nomdedomaine.net-login
+password='mypassword'
+dyn.nomdedomaine.net
+```
+3. sudo service ddclient restart
 

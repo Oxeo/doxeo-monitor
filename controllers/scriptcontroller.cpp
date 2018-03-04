@@ -9,10 +9,14 @@
 ScriptController::ScriptController(QObject *parent) : AbstractController(parent)
 {
     router.insert("list", "scriptList");
+    router.insert("editor", "editor");
+    router.insert("export", "exportScripts");
     router.insert("script_list.js", "jsonScriptList");
     router.insert("edit_script.js", "jsonEditScript");
     router.insert("delete_script.js", "jsonDeleteScript");
     router.insert("set_status", "jsonChangeScriptStatus");
+    router.insert("set_body", "jsonSetScriptBody");
+    router.insert("get_script.js", "jsonGetScript");
 
     Script::update();
     scriptEngine = new ScriptEngine(parent);
@@ -40,6 +44,46 @@ void ScriptController::scriptList()
     view["content"] = loadHtmlView("views/script/scriptlist.body.html", NULL, false);
     view["bottom"] = loadHtmlView("views/script/scriptlist.js", NULL, false);
     loadHtmlView("views/template.html", &view);
+}
+
+void ScriptController::editor()
+{
+    if (!Authentification::auth().isConnected(header, cookie)) {
+        redirect("/auth");
+        return;
+    }
+
+    QHash<QString, QByteArray> data;
+    loadHtmlView("views/script/editor.html", &data);
+}
+
+void ScriptController::exportScripts()
+{
+    if (!Authentification::auth().isConnected(header, cookie)) {
+        redirect("/auth");
+        return;
+    }
+
+    QList<Script> list = Script::getScriptList().values();
+    QString result;
+
+    foreach (const Script &sw, list) {
+        result += " /*\n";
+        result += " * Title: " + sw.getName() + "\n";
+        result += " * Id: " + QString::number(sw.getId()) + "\n";
+        result += " * Description: " + sw.getDescription() + "\n";
+        result += " */\n\n";
+        result += sw.getContent() + "\n\n\n";
+    }
+
+    *output << "HTTP/1.0 200 Ok\r\n";
+    *output << "Content-Type: application/octet-stream\r\n";
+    *output << "Content-Disposition: attachment; filename=\"doxeo_scripts.js\"\r\n\r\n";
+    output->flush();
+
+    // Streaming the file
+    QByteArray block = result.toUtf8();
+    socket->write(block);
 }
 
 void ScriptController::jsonScriptList()
@@ -140,3 +184,43 @@ void ScriptController::jsonChangeScriptStatus()
     loadJsonView(result);
 }
 
+void ScriptController::jsonSetScriptBody()
+{
+    QJsonObject result;
+
+    if (!Authentification::auth().isConnected(header, cookie)) {
+        result.insert("msg", "You are not logged.");
+        result.insert("success", false);
+    }
+    else if (Script::isIdValid(query->getItem("id").toInt())) {
+        Script &s = Script::get(query->getItem("id").toInt());
+        s.setContent(query->getItem("content"));
+        s.flush();
+        result.insert("success", true);
+    } else {
+       result.insert("msg", "Script Id invalid");
+       result.insert("success", false);
+    }
+
+    loadJsonView(result);
+}
+
+void ScriptController::jsonGetScript()
+{
+    QJsonObject result;
+
+    if (!Authentification::auth().isConnected(header, cookie)) {
+        result.insert("msg", "You are not logged.");
+        result.insert("success", false);
+    }
+    else if (Script::isIdValid(query->getItem("id").toInt())) {
+        Script &s = Script::get(query->getItem("id").toInt());
+        result.insert("script", s.toJson());
+        result.insert("success", true);
+    } else {
+       result.insert("msg", "Script Id invalid");
+       result.insert("success", false);
+    }
+
+    loadJsonView(result);
+}

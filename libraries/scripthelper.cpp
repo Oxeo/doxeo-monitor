@@ -59,17 +59,17 @@ QString ScriptHelper::execute(QString cmd)
 
 void ScriptHelper::setLog(QString log)
 {
-    qDebug() << log;
+    MessageLogger::logger().addMessage("debug", log);
 }
 
 void ScriptHelper::setWarning(QString warning)
 {
-    qWarning() << warning;
+    MessageLogger::logger().addMessage("warning", warning);
 }
 
 void ScriptHelper::setAlert(QString alert)
 {
-    qCritical() << alert;
+    MessageLogger::logger().addMessage("critical", alert);
 }
 
 QString ScriptHelper::getData(QString key)
@@ -82,12 +82,9 @@ void ScriptHelper::setData(QString key, QString value)
     data.insert(key, value);
 }
 
-void ScriptHelper::sendFCM(QString message)
+void ScriptHelper::sendFCM(QString type, QString name, QString body)
 {
     FirebaseCloudMessaging *fcm = MessageLogger::logger().getFCM();
-    fcm->setMessage(message);
-    fcm->setTitle("Doxeo");
-    fcm->send("");
+    FirebaseCloudMessaging::Message msg = {type.toUpper(), name, body};
+    fcm->send(msg);
 }
-
-

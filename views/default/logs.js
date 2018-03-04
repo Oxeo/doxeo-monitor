@@ -4,6 +4,13 @@ var lastLogId = 0;
 
 jQuery(document).ready(function() {
     update();
+    
+    $("#searchInput").on("keyup", function() {
+      var value = $(this).val().toLowerCase();
+      $("#logsTable tr").filter(function() {
+        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+      });
+    });
 });
 
 function update() {
@@ -14,6 +21,7 @@ function update() {
     $.getJSON('logs.js?log=debug&startid=' + lastLogId).done(function(result) {
         if (result.success) {
             if (lastLogId == 0) {
+                $('#logsTable').html("");
                 setInterval(update, 1000);
             }
             
@@ -23,9 +31,16 @@ function update() {
                 } else if (val.type === "warning") {
                     $('#logsTable').prepend('<tr class="warning"><td>'+val.date+'</td><td>'+val.message+'</td></tr>')
                 } else {
-                    $('#logsTable').prepend('<tr><td>'+val.date+'</td><td>'+val.message+'</td></tr>')
+                    var msg = val.message.replace("uFFFD\\uFFFD\\uFFFD\\uFFFD\\uFFFD\\uFFFD\\uFFFD\\uFFFD\\uFFFD\\uFFFD\\uFFFD\\uFFFD\\uFFFD\\uFFFD\\", "...")
+                    $('#logsTable').prepend('<tr><td>'+val.date+'</td><td>'+msg+'</td></tr>')
                 }
                 lastLogId = val.id + 1;
+            });
+            
+            // filter
+            var value = $("#searchInput").val().toLowerCase();
+            $("#logsTable tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
             });
         } else {
             updateAll = false;
